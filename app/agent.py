@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import datetime
+import functools
 import json
 from zoneinfo import ZoneInfo
 
@@ -171,6 +172,7 @@ def update_watering_schedule(plant_id: str, watering_frequency_days: int) -> str
     return f"Updated watering frequency for '{plant_id}' to every {watering_frequency_days} days."
 
 
+@functools.lru_cache(maxsize=128)
 def lookup_botanical_taxonomy(plant_name: str) -> str:
     """Queries the GBIF (Global Biodiversity Information Facility) public botanical API to fetch real scientific taxonomy (kingdom, family, genus, scientific name) for any plant.
 
@@ -565,6 +567,7 @@ def generate_watering_ics_calendar(plant_name: str, interval_days: int, start_da
     return json.dumps(data, indent=2)
 
 
+@functools.lru_cache(maxsize=128)
 def get_current_weather_care_advice(location: str) -> str:
     """Fetches real-time weather, temperature, and relative humidity for any city or location using Open-Meteo API and calculates microclimate plant care recommendations.
 
@@ -625,6 +628,7 @@ def get_current_weather_care_advice(location: str) -> str:
         return f"Error fetching weather care advice for '{location}': {str(e)}"
 
 
+@functools.lru_cache(maxsize=128)
 def find_nearby_plant_nurseries(location: str) -> str:
     """Finds real nearby plant nurseries, botanical garden centers, and plant supply stores around a specified location.
 

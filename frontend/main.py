@@ -183,6 +183,16 @@ def _extract_parts(parts: list) -> list[dict]:
     return out
 
 
+_async_client: httpx.AsyncClient | None = None
+
+def get_async_client() -> httpx.AsyncClient:
+    global _async_client
+    if _async_client is None or _async_client.is_closed:
+        limits = httpx.Limits(max_keepalive_connections=20, max_connections=50, keepalive_expiry=30)
+        _async_client = httpx.AsyncClient(headers=_auth_headers(), limits=limits, timeout=90)
+    return _async_client
+
+
 @app.post("/chat")
 async def chat(req: Request):
     body = await req.json()
@@ -194,32 +204,32 @@ async def chat(req: Request):
     user_id = body.get("user_id") or "web-user"
     parts: list[dict] = []
 
-    async with httpx.AsyncClient(headers=_auth_headers(), timeout=120) as client:
-        card = await _get_card(client)
-        factory = ClientFactory(ClientConfig(httpx_client=client))
-        a2a_client = factory.create(card)
+    client = get_async_client()
+    card = await _get_card(client)
+    factory = ClientFactory(ClientConfig(httpx_client=client))
+    a2a_client = factory.create(card)
 
-        msg = Message(
-            message_id=str(uuid.uuid4()),
-            role=Role.ROLE_USER,
-            parts=[Part(text=message)],
-            context_id=_contexts.get(user_id),
-        )
-        send_req = SendMessageRequest(message=msg)
+    msg = Message(
+        message_id=str(uuid.uuid4()),
+        role=Role.ROLE_USER,
+        parts=[Part(text=message)],
+        context_id=_contexts.get(user_id),
+    )
+    send_req = SendMessageRequest(message=msg)
 
-        async for event in a2a_client.send_message(send_req):
-            if hasattr(event, "task") and event.HasField("task"):
-                if getattr(event.task, "context_id", None):
-                    _contexts[user_id] = event.task.context_id
-            if hasattr(event, "artifact_update") and event.HasField("artifact_update"):
-                parts.extend(_extract_parts(event.artifact_update.artifact.parts))
-            if hasattr(event, "status_update") and event.HasField("status_update"):
-                status_msg = getattr(event.status_update, "message", None)
-                if status_msg and getattr(status_msg, "parts", None):
-                    parts.extend(_extract_parts(status_msg.parts))
-            if hasattr(event, "message") and event.HasField("message"):
-                if getattr(event.message, "parts", None):
-                    parts.extend(_extract_parts(event.message.parts))
+    async for event in a2a_client.send_message(send_req):
+        if hasattr(event, "task") and event.HasField("task"):
+            if getattr(event.task, "context_id", None):
+                _contexts[user_id] = event.task.context_id
+        if hasattr(event, "artifact_update") and event.HasField("artifact_update"):
+            parts.extend(_extract_parts(event.artifact_update.artifact.parts))
+        if hasattr(event, "status_update") and event.HasField("status_update"):
+            status_msg = getattr(event.status_update, "message", None)
+            if status_msg and getattr(status_msg, "parts", None):
+                parts.extend(_extract_parts(status_msg.parts))
+        if hasattr(event, "message") and event.HasField("message"):
+            if getattr(event.message, "parts", None):
+                parts.extend(_extract_parts(event.message.parts))
 
     if not parts:
         # The turn produced no text or UI (e.g. the agent only ran tools, or a
