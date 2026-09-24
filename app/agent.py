@@ -755,6 +755,10 @@ root_agent = Agent(
     name="root_agent",
     model=Gemini(
         model="gemini-2.5-flash",
+        generate_content_config=types.GenerateContentConfig(
+            temperature=0.2,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+        ),
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     code_executor=code_executor,
