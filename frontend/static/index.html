@@ -680,6 +680,9 @@
     </div>
   </div>
   <div class="header-actions">
+    <button id="settingsBtn" class="action-btn" title="API Key Settings">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
     <button id="historyBtn" class="action-btn" title="Chat History">
       <span class="material-symbols-outlined">history</span>
     </button>
@@ -761,6 +764,38 @@
   </div>
 </div>
 
+<!-- API Key Settings Modal -->
+<div id="settingsModal" class="history-modal" onclick="closeSettingsModal(event)">
+  <div class="history-dialog" onclick="event.stopPropagation()" style="max-width: 500px;">
+    <div class="history-header">
+      <h3><span class="material-symbols-outlined">settings</span> API Key Settings</h3>
+      <span class="history-close" onclick="closeSettingsModal()">&times;</span>
+    </div>
+    <div class="history-body" style="padding: 1.25rem;">
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.4;">
+        If any default API key or credential expires, enter custom replacement API keys below. They are saved securely in local browser storage and applied to AI queries and Google Maps requests.
+      </p>
+      
+      <div style="margin-bottom: 1.2rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-main);">Gemini / Google GenAI API Key</label>
+        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-family: monospace; font-size: 0.9rem;" />
+      </div>
+
+      <div style="margin-bottom: 1.2rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-main);">Google Maps API Key</label>
+        <input type="password" id="mapsApiKeyInput" placeholder="AIzaSy..." style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-family: monospace; font-size: 0.9rem;" />
+      </div>
+
+      <div id="settingsStatus" style="font-size: 0.85rem; color: var(--accent); margin-bottom: 1rem; display: none; font-weight: 500;"></div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="button" class="tool-btn" onclick="clearApiKeys()" style="background: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.3);">Reset Keys</button>
+        <button type="button" class="ics-btn" onclick="saveApiKeys()">Save API Keys</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const log = document.getElementById("log");
 const form = document.getElementById("form");
@@ -797,6 +832,50 @@ clearBtn.addEventListener("click", () => {
     </div>
   `;
 });
+
+// API Key Settings Modal
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const geminiApiKeyInput = document.getElementById("geminiApiKeyInput");
+const mapsApiKeyInput = document.getElementById("mapsApiKeyInput");
+const settingsStatus = document.getElementById("settingsStatus");
+
+if (settingsBtn) {
+  settingsBtn.addEventListener("click", () => {
+    geminiApiKeyInput.value = localStorage.getItem("gemini_api_key") || "";
+    mapsApiKeyInput.value = localStorage.getItem("maps_api_key") || "";
+    settingsStatus.style.display = "none";
+    settingsModal.style.display = "flex";
+  });
+}
+
+function closeSettingsModal(e) {
+  if (!e || e.target === settingsModal || e.target.classList.contains("history-close")) {
+    settingsModal.style.display = "none";
+  }
+}
+
+function saveApiKeys() {
+  const gKey = geminiApiKeyInput.value.trim();
+  const mKey = mapsApiKeyInput.value.trim();
+  if (gKey) localStorage.setItem("gemini_api_key", gKey);
+  else localStorage.removeItem("gemini_api_key");
+  if (mKey) localStorage.setItem("maps_api_key", mKey);
+  else localStorage.removeItem("maps_api_key");
+  
+  settingsStatus.textContent = "✅ API keys saved successfully!";
+  settingsStatus.style.display = "block";
+  setTimeout(() => closeSettingsModal(), 1200);
+}
+
+function clearApiKeys() {
+  localStorage.removeItem("gemini_api_key");
+  localStorage.removeItem("maps_api_key");
+  geminiApiKeyInput.value = "";
+  mapsApiKeyInput.value = "";
+  settingsStatus.textContent = "Reset to default system API keys.";
+  settingsStatus.style.display = "block";
+}
 
 // Chat History Modal
 historyBtn.addEventListener("click", () => {
@@ -1190,6 +1269,11 @@ form.addEventListener("submit", async (ev) => {
   try {
     const payload = { message: text };
     if (attachmentData) payload.image_data = attachmentData;
+    
+    const gKey = localStorage.getItem("gemini_api_key");
+    const mKey = localStorage.getItem("maps_api_key");
+    if (gKey) payload.gemini_api_key = gKey;
+    if (mKey) payload.maps_api_key = mKey;
 
     const res = await fetch("/chat", { 
       method: "POST", 

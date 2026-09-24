@@ -198,6 +198,15 @@ async def chat(req: Request):
     body = await req.json()
     message = body.get("message", "")
     image_data = body.get("image_data")
+    gemini_key = body.get("gemini_api_key")
+    maps_key = body.get("maps_api_key")
+
+    if gemini_key:
+        os.environ["GEMINI_API_KEY"] = gemini_key
+        os.environ["GOOGLE_API_KEY"] = gemini_key
+    if maps_key:
+        os.environ["GOOGLE_MAPS_API_KEY"] = maps_key
+
     if image_data:
         message = f"{message}\n\n[Attached User Plant Photo: Base64/DataURL provided. Please diagnose any visible plant health issues, pest damage, soil/leaf symptoms, and provide tailored care guidance.]"
 
