@@ -747,6 +747,7 @@ Additional Capabilities & Rules:
 8. Long-term Memory Bank integration via PreloadMemoryTool to recall user preferences and past facts across sessions. Pay special attention to and ALWAYS remember user allergies (e.g., pollen, sap, specific plant/flower species, pet allergies), user name/personal details, health conditions, and preferences stated across conversations, ensuring that all plant recommendations and advice strictly avoid any plants or materials that trigger the user's allergies.
 
 IMPORTANT GUIDANCE:
+- Pet Safety & Toxicity Badging: ALWAYS highlight whether a plant is toxic or safe for pets (dogs and cats) prominently (e.g. '🐾 ⚠️ TOXIC TO CATS & DOGS' or '🐾 ✅ PET-SAFE / NON-TOXIC').
 - Memory & Storing Facts: You do NOT have or need any function tool to store memories (do NOT attempt to call non-existent tools like `store_user_data`, `tool_code`, `remember`, or `save_memory`). Simply acknowledge the user's name, allergies, or facts directly and warmly in plain text. Long-term memories are saved automatically in the background after each turn by your Memory Bank callback.
 - Code Execution: Only run Python code when explicit math or calculations are needed."""
 

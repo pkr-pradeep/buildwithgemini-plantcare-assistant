@@ -667,6 +667,41 @@
   .ics-btn:hover {
     opacity: 0.9;
   }
+  .pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-card);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.45rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.6rem;
+    transition: all 0.2s ease;
+  }
+  .pdf-btn:hover {
+    background: var(--accent-light);
+  }
+  @media print {
+    header, .footer-container, .action-btn, .suggestions-wrapper, .history-modal, .pdf-btn, .tool-btn {
+      display: none !important;
+    }
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    #log {
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+    .msg-row.agent .bubble {
+      box-shadow: none !important;
+      border: 1px solid #cccccc !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1223,6 +1258,15 @@ function renderReply(b, parts) {
         `;
         b.appendChild(icsBox);
       }
+    }
+
+    // Add PDF Care Guide Print/Export button for long care responses or plant guides
+    if (textStr.length > 80) {
+      const pdfBtn = el("button", "pdf-btn");
+      pdfBtn.type = "button";
+      pdfBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.1rem;">picture_as_pdf</span> Print / Save PDF Care Guide`;
+      pdfBtn.onclick = () => window.print();
+      b.appendChild(pdfBtn);
     }
   }
 
