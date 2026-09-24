@@ -674,6 +674,61 @@ def find_nearby_plant_nurseries(location: str) -> str:
         return f"Error finding nurseries: {str(e)}"
 
 
+@functools.lru_cache(maxsize=128)
+def get_room_lighting_and_plant_recommendations(room_type: str, window_orientation: str = "south") -> str:
+    """Provides room-specific indoor lighting analysis, humidity profiles, and recommended houseplants for specific home rooms.
+
+    Args:
+        room_type: Indoor room name (e.g. "Bathroom", "Living Room", "Bedroom", "Office", "Kitchen", "Balcony").
+        window_orientation: Window exposure direction (e.g. "north", "south", "east", "west", or "no_window").
+
+    Returns:
+        A formatted JSON string with room microclimate metrics, recommended plants, and positioning advice.
+    """
+    room_clean = room_type.strip().lower()
+    orient_clean = window_orientation.strip().lower()
+
+    room_profiles = {
+        "bathroom": {
+            "light_description": "Medium to low indirect light (typically frosted or small windows).",
+            "humidity": "High humidity (60% - 85% from showers).",
+            "recommended_plants": ["Boston Fern", "Peace Lily", "Pothos", "Snake Plant", "Calathea"],
+            "care_tip": "High humidity keeps tropical ferns and calatheas thriving! Avoid overwatering soil as air remains humid."
+        },
+        "living room": {
+            "light_description": "Bright indirect to direct sunlight (large main windows).",
+            "humidity": "Moderate indoor humidity (40% - 50%).",
+            "recommended_plants": ["Monstera Deliciosa", "Fiddle Leaf Fig", "Bird of Paradise", "Rubber Tree"],
+            "care_tip": "Rotate large potted plants 90 degrees every month for symmetrical foliage growth."
+        },
+        "bedroom": {
+            "light_description": "Low to medium indirect light (blinds or curtains frequently drawn).",
+            "humidity": "Standard room humidity (35% - 45%).",
+            "recommended_plants": ["Snake Plant (Oxygen producing)", "ZZ Plant", "Pothos", "Peace Lily"],
+            "care_tip": "Snake plants and ZZ plants release oxygen at night and thrive in low-light bedroom corners."
+        },
+        "office": {
+            "light_description": "Fluorescent or indirect window light.",
+            "humidity": "Dry air conditioned / heated air (30% - 40%).",
+            "recommended_plants": ["ZZ Plant", "Succulents", "Jade Plant", "Cast Iron Plant"],
+            "care_tip": "Choose drought-tolerant plants that survive AC drafts and weekend watering gaps."
+        }
+    }
+
+    profile = room_profiles.get(room_clean, {
+        "light_description": f"Variable light based on {orient_clean}-facing window exposure.",
+        "humidity": "Standard indoor humidity (40% - 50%).",
+        "recommended_plants": ["Snake Plant", "Pothos", "ZZ Plant", "Spider Plant"],
+        "care_tip": "Place light-loving plants within 3-5 feet of south or west windows."
+    })
+
+    return json.dumps({
+        "room_type": room_type.title(),
+        "window_orientation": window_orientation.title(),
+        "microclimate": profile,
+    }, indent=2)
+
+
 _mem_service = None
 
 
@@ -776,6 +831,7 @@ root_agent = Agent(
         find_nearby_plant_nurseries,
         get_current_weather_care_advice,
         generate_watering_ics_calendar,
+        get_room_lighting_and_plant_recommendations,
         generate_plant_image,
         generate_plant_video,
         get_current_time,
