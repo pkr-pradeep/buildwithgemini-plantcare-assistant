@@ -4,5 +4,12 @@
   "is_a2a": true,
   "language": "python",
   "agent_directory": "app",
-  "deployment_timestamp": "2026-09-24T17:43:25.625852+00:00"
+  "deployment_timestamp": "2026-09-24T17:43:25.625852+00:00",
+  "pending_operation": {
+    "operation_name": "projects/725054625673/locations/us-east1/reasoningEngines/7629302277928386560/operations/1056937644195315712",
+    "project": "qwiklabs-gcp-02-2b66acfe63f6",
+    "location": "us-east1",
+    "deployment_target": "agent_runtime",
+    "started_at": "2026-09-24T17:44:56.654297+00:00"
+  }
 }

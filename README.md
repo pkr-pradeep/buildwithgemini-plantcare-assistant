@@ -17,7 +17,12 @@ An intelligent AI botanical and houseplant specialist built with the Google Agen
 * **🎤 Voice Input (Speech Recognition)**: Integrated hands-free microphone input using Web Speech API for real-time voice queries.
 * **🌤️ Microclimate & Live Weather Care Advice**: Fetches live temperature and humidity to generate real-time weather-adjusted plant care tips.
 * **🛒 Local Nursery & Plant Store Finder**: Locates nearby garden centers and florists with Google Maps directions links.
-* **🧠 Vertex AI Memory Bank**: Retains user plant care preferences, indoor environment parameters, and plant collections across multi-session conversations.
+* **🪴 Room-by-Room Houseplant Organizer**: Analyzes indoor room microclimates (Bathroom, Living Room, Bedroom, Office) and window directions to recommend optimal plant positioning.
+* **🐾 Pet Safety & Toxicity Badges**: Prominently highlights whether a plant is toxic or safe for cats and dogs (`🐾 ⚠️ TOXIC TO CATS & DOGS` vs `🐾 ✅ PET-SAFE / NON-TOXIC`).
+* **📄 Printable PDF Care Guide Exporter**: One-click PDF Export (`window.print()`) button on care guides for printing or saving downloadable plant care sheets.
+* **⚙️ API Key Settings Provision**: Modal dialog allowing users to enter custom replacement Gemini or Google Maps API keys if default system credentials expire.
+* **ℹ️ Dedicated About Us Page**: Standalone `/about.html` page showcasing the complete feature matrix, system capabilities, and Google ADK cloud stack.
+* **🧠 Vertex AI Memory Bank**: Retains user plant care preferences, personal allergy safety rules, and plant collections across multi-session conversations.
 * **💻 Code Execution Sandbox**: Runs Python analytical code safely using the Vertex AI Agent Engine Sandbox (`AgentEngineSandboxCodeExecutor`).
 * **📊 A2UI Dynamic UI Cards**: Emits native A2UI interface components (Cards, Columns, Rows, Images, Icons) rendered directly inside the chat window.
 * **✨ Modern Botanical Web Interface**: Includes custom dark/light theme switching, full-screen image lightbox modal, animated wave thinking indicators, chat history modal (`📜`), and quick-prompt suggestion chips.
