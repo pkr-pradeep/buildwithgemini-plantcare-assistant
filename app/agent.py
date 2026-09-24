@@ -512,7 +512,166 @@ def get_current_time(query: str) -> str:
     return f"The current time for query {query} is {now.strftime('%Y-%m-%d %H:%M:%S %Z%z')}"
 
 
+def generate_watering_ics_calendar(plant_name: str, interval_days: int, start_date: str = "") -> str:
+    """Generates iCalendar (.ics) event data to create recurring watering reminders in Google Calendar or Apple Calendar.
+
+    Args:
+        plant_name: The name of the plant (e.g. "Monstera Deliciosa").
+        interval_days: Watering interval in days (e.g. 7).
+        start_date: Optional start date in YYYY-MM-DD format. Defaults to today.
+
+    Returns:
+        A formatted JSON string containing the iCalendar (.ics) payload and subscription instructions.
+    """
+    import datetime
+    today = datetime.date.today()
+    if start_date:
+        try:
+            dt = datetime.datetime.strptime(start_date.strip(), "%Y-%m-%d").date()
+        except Exception:
+            dt = today
+    else:
+        dt = today
+
+    dt_str = dt.strftime("%Y%m%D").replace("/", "")
+    summary = f"Water {plant_name}"
+    description = f"Recurring watering reminder for your {plant_name} every {interval_days} days."
+    
+    ics_text = (
+        "BEGIN:VCALENDAR\n"
+        "VERSION:2.0\n"
+        "PRODID:-//PlantCare Assistant//EN\n"
+        "BEGIN:VEVENT\n"
+        f"SUMMARY:{summary}\n"
+        f"DESCRIPTION:{description}\n"
+        f"DTSTART;VALUE=DATE:{dt_str}\n"
+        f"RRULE:FREQ=DAILY;INTERVAL={int(interval_days)}\n"
+        "BEGIN:VALARM\n"
+        "TRIGGER:-PT9H\n"
+        "ACTION:DISPLAY\n"
+        f"DESCRIPTION:Reminder: Time to water your {plant_name}!\n"
+        "END:VALARM\n"
+        "END:VEVENT\n"
+        "END:VCALENDAR\n"
+    )
+
+    data = {
+        "plant_name": plant_name,
+        "interval_days": interval_days,
+        "start_date": dt.strftime("%Y-%m-%d"),
+        "ics_data": ics_text,
+        "instructions": f"Copy the calendar data or download the .ics file to add recurring reminders every {interval_days} days to your calendar."
+    }
+    return json.dumps(data, indent=2)
+
+
+def get_current_weather_care_advice(location: str) -> str:
+    """Fetches real-time weather, temperature, and relative humidity for any city or location using Open-Meteo API and calculates microclimate plant care recommendations.
+
+    Args:
+        location: City or location name (e.g. "Seattle", "San Francisco", "Austin, TX", "London").
+
+    Returns:
+        A JSON string containing local weather conditions and tailored indoor/outdoor plant care advice.
+    """
+    import urllib.parse
+    import urllib.request
+    
+    loc_clean = urllib.parse.quote(location.strip())
+    geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={loc_clean}&count=1&language=en&format=json"
+    
+    try:
+        req = urllib.request.Request(geo_url, headers={"User-Agent": "PlantCareAssistant/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as res:
+            geo_data = json.loads(res.read().decode())
+            results = geo_data.get("results")
+            if not results:
+                return f"Could not find geographic coordinates for location '{location}'."
+            
+            lat = results[0]["latitude"]
+            lng = results[0]["longitude"]
+            city_name = results[0].get("name", location)
+            country = results[0].get("country", "")
+
+        weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,relative_humidity_2m,weather_code&temperature_unit=fahrenheit"
+        req_w = urllib.request.Request(weather_url, headers={"User-Agent": "PlantCareAssistant/1.0"})
+        with urllib.request.urlopen(req_w, timeout=8) as res_w:
+            w_data = json.loads(res_w.read().decode())
+            curr = w_data.get("current", {})
+            temp_f = curr.get("temperature_2m")
+            humidity = curr.get("relative_humidity_2m")
+
+        # Generate botanical microclimate care advice based on live weather
+        care_tips = []
+        if humidity is not None and humidity < 40:
+            care_tips.append("⚠️ Low indoor/outdoor humidity detected (<40%). Consider misting tropical plants (like Monsteras & Ferns) or placing a humidifier nearby.")
+        elif humidity is not None and humidity > 70:
+            care_tips.append("🌿 High humidity levels detected (>70%). Ensure good air circulation around indoor plants to prevent fungal mildew.")
+
+        if temp_f is not None and temp_f > 85:
+            care_tips.append("☀️ High heat detected (>85°F). Soil dries out significantly faster — check soil moisture every 2-3 days and protect sensitive foliage from direct midday sun.")
+        elif temp_f is not None and temp_f < 50:
+            care_tips.append("❄️ Cool temperatures detected (<50°F). Move tropical plants away from drafty windows and reduce watering frequency as plant growth slows down.")
+        else:
+            care_tips.append("✅ Mild temperatures detected. Standard watering and lighting care apply.")
+
+        return json.dumps({
+            "location": f"{city_name}, {country}",
+            "temperature_f": temp_f,
+            "relative_humidity_percent": humidity,
+            "microclimate_care_tips": care_tips
+        }, indent=2)
+    except Exception as e:
+        return f"Error fetching weather care advice for '{location}': {str(e)}"
+
+
+def find_nearby_plant_nurseries(location: str) -> str:
+    """Finds real nearby plant nurseries, botanical garden centers, and plant supply stores around a specified location.
+
+    Args:
+        location: City, zip code, or address to search near (e.g. "Seattle, WA" or "Austin, TX").
+
+    Returns:
+        A JSON string containing a list of nearby plant nurseries with addresses and Google Maps directions links.
+    """
+    import urllib.parse
+    import urllib.request
+
+    loc_clean = urllib.parse.quote(f"plant nursery garden center in {location.strip()}")
+    url = f"https://nominatim.openstreetmap.org/search?q={loc_clean}&format=json&limit=5&addressdetails=1"
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "PlantCareAssistant/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as res:
+            results = json.loads(res.read().decode())
+            if not results:
+                return f"No plant nurseries found nearby '{location}'."
+
+            nurseries = []
+            for item in results:
+                name = item.get("display_name", "").split(",")[0]
+                addr = item.get("display_name")
+                lat = item.get("lat")
+                lon = item.get("lon")
+                maps_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+                nurseries.append({
+                    "name": name,
+                    "address": addr,
+                    "latitude": lat,
+                    "longitude": lon,
+                    "google_maps_url": maps_link
+                })
+
+            return json.dumps({
+                "query": location,
+                "nurseries": nurseries
+            }, indent=2)
+    except Exception as e:
+        return f"Error finding nurseries: {str(e)}"
+
+
 _mem_service = None
+
 
 
 def get_memory_service():
@@ -605,6 +764,9 @@ root_agent = Agent(
         lookup_botanical_taxonomy,
         geocode_address,
         find_nearby_places,
+        find_nearby_plant_nurseries,
+        get_current_weather_care_advice,
+        generate_watering_ics_calendar,
         generate_plant_image,
         generate_plant_video,
         get_current_time,

@@ -187,6 +187,10 @@ def _extract_parts(parts: list) -> list[dict]:
 async def chat(req: Request):
     body = await req.json()
     message = body.get("message", "")
+    image_data = body.get("image_data")
+    if image_data:
+        message = f"{message}\n\n[Attached User Plant Photo: Base64/DataURL provided. Please diagnose any visible plant health issues, pest damage, soil/leaf symptoms, and provide tailored care guidance.]"
+
     user_id = body.get("user_id") or "web-user"
     parts: list[dict] = []
 

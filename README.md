@@ -12,10 +12,15 @@ An intelligent AI botanical and houseplant specialist built with the Google Agen
 * **💧 Smart Watering Calculator**: Calculates precise watering requirements (volume in mL / fl oz and frequency in days) based on pot size, room temperature, and humidity levels.
 * **🎨 Visual Plant Diagnostic Image Generation**: Generates high-quality visual plant care reference images using Google Imagen 3 (`imagen-3.0-generate-002`).
 * **📹 Omni Time-Lapse Video Generation**: Generates botanical time-lapse videos using Google's Omni model (`gemini-omni-flash-preview`) via the Vertex AI Interactions API, storing artifacts in session memory and uploading directly to Google Cloud Storage.
+* **📷 Plant Diagnostic Photo Upload**: Attach real plant photos directly in the chat bar for AI visual health diagnosis and pest detection.
+* **📅 iCalendar (.ics) Watering Export**: Generates exportable `.ics` calendar files for recurring watering reminders in Google Calendar and Apple Calendar.
+* **🎤 Voice Input (Speech Recognition)**: Integrated hands-free microphone input using Web Speech API for real-time voice queries.
+* **🌤️ Microclimate & Live Weather Care Advice**: Fetches live temperature and humidity to generate real-time weather-adjusted plant care tips.
+* **🛒 Local Nursery & Plant Store Finder**: Locates nearby garden centers and florists with Google Maps directions links.
 * **🧠 Vertex AI Memory Bank**: Retains user plant care preferences, indoor environment parameters, and plant collections across multi-session conversations.
 * **💻 Code Execution Sandbox**: Runs Python analytical code safely using the Vertex AI Agent Engine Sandbox (`AgentEngineSandboxCodeExecutor`).
 * **📊 A2UI Dynamic UI Cards**: Emits native A2UI interface components (Cards, Columns, Rows, Images, Icons) rendered directly inside the chat window.
-* **✨ Modern Botanical Web Interface**: Includes custom dark/light theme switching, full-screen image lightbox modal, animated wave thinking indicators, and quick-prompt suggestion chips.
+* **✨ Modern Botanical Web Interface**: Includes custom dark/light theme switching, full-screen image lightbox modal, animated wave thinking indicators, chat history modal (`📜`), and quick-prompt suggestion chips.
 
 ---
 
